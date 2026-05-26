@@ -1,1 +1,754 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C4Ai | Next Generation AI Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: '#030308',
+                        deep: '#0a0a1f',
+                        neon: {
+                            cyan: '#00f3ff',
+                            purple: '#bc13fe',
+                            pink: '#ff0055'
+                        },
+                        glass: 'rgba(255, 255, 255, 0.05)',
+                        glassBorder: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        glow: {
+                            'from': { boxShadow: '0 0 10px #00f3ff, 0 0 20px #00f3ff' },
+                            'to': { boxShadow: '0 0 20px #bc13fe, 0 0 30px #bc13fe' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
+    <style>
+        body {
+            background-color: #030308;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a1f; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff; 
+        }
+
+        /* Noise Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(16, 20, 40, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(0, 243, 255, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px -10px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Neon Text */
+        .text-neon-cyan {
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        .text-neon-purple {
+            color: #bc13fe;
+            text-shadow: 0 0 10px rgba(188, 19, 254, 0.5);
+        }
+
+        /* Input Styling */
+        .ai-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s;
+        }
+        .ai-input:focus {
+            outline: none;
+            border-color: #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Loader */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #00f3ff;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #00f3ff;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Canvas Background */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-neon-cyan selection:text-black">
+
+    <!-- Background Animation -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="noise-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-40 top-0 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 cursor-pointer" onclick="router.navigate('home')">
+                    <span class="font-orbitron text-2xl font-bold tracking-wider text-white">
+                        C4<span class="text-neon-cyan">Ai</span>
+                    </span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <button onclick="router.navigate('home')" class="nav-link hover:text-neon-cyan px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</button>
+                        <button onclick="router.navigate('chat')" class="nav-link hover:text-neon-cyan px-3 py-2 rounded-md text-sm font-medium transition-colors">AI Chat</button>
+                        <button onclick="router.navigate('image')" class="nav-link hover:text-neon-cyan px-3 py-2 rounded-md text-sm font-medium transition-colors">Image Gen</button>
+                        <button onclick="router.navigate('video')" class="nav-link hover:text-neon-cyan px-3 py-2 rounded-md text-sm font-medium transition-colors">Video Gen</button>
+                        <button onclick="router.navigate('voice')" class="nav-link hover:text-neon-cyan px-3 py-2 rounded-md text-sm font-medium transition-colors">Voice</button>
+                        <button onclick="router.navigate('pricing')" class="nav-link hover:text-neon-cyan px-3 py-2 rounded-md text-sm font-medium transition-colors">Pricing</button>
+                    </div>
+                </div>
+
+                <!-- Right Side -->
+                <div class="hidden md:flex items-center gap-4">
+                    <button onclick="toggleLanguage()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fas fa-globe"></i> <span id="lang-label">EN</span>
+                    </button>
+                    
+                    <div id="auth-buttons">
+                        <button onclick="router.navigate('login')" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Log in</button>
+                        <button onclick="router.navigate('register')" class="bg-neon-cyan/10 border border-neon-cyan/50 hover:bg-neon-cyan/20 text-neon-cyan px-4 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)]">
+                            Get Started
+                        </button>
+                    </div>
+
+                    <div id="user-menu" class="hidden flex items-center gap-3">
+                        <button onclick="router.navigate('dashboard')" class="flex items-center gap-2 hover:bg-white/5 px-3 py-2 rounded-lg transition-colors">
+                            <img src="https://ui-avatars.com/api/?name=User&background=0a0a1f&color=00f3ff" class="w-8 h-8 rounded-full border border-neon-cyan/50">
+                            <span class="text-sm font-medium">Dashboard</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="-mr-2 flex md:hidden">
+                    <button onclick="toggleMobileMenu()" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden glass-panel border-t border-white/10" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button onclick="router.navigate('home'); toggleMobileMenu()" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">Home</button>
+                <button onclick="router.navigate('chat'); toggleMobileMenu()" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">AI Chat</button>
+                <button onclick="router.navigate('image'); toggleMobileMenu()" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">Image Gen</button>
+                <button onclick="router.navigate('video'); toggleMobileMenu()" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">Video Gen</button>
+                <button onclick="router.navigate('pricing'); toggleMobileMenu()" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium w-full text-left">Pricing</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="app-container" class="pt-20 min-h-screen relative z-10">
+        <!-- Views will be injected here -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-void/80 backdrop-blur-md mt-20">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-1">
+                    <span class="font-orbitron text-2xl font-bold text-white">C4<span class="text-neon-cyan">Ai</span></span>
+                    <p class="mt-4 text-gray-400 text-sm">The next generation of creative artificial intelligence. Generate, animate, and create with the power of neural networks.</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-neon-cyan tracking-wider uppercase">Platform</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" onclick="router.navigate('image')" class="text-gray-400 hover:text-white text-sm">Image Generation</a></li>
+                        <li><a href="#" onclick="router.navigate('video')" class="text-gray-400 hover:text-white text-sm">Video Creation</a></li>
+                        <li><a href="#" onclick="router.navigate('chat')" class="text-gray-400 hover:text-white text-sm">AI Assistant</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-neon-purple tracking-wider uppercase">Company</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-white tracking-wider uppercase">Legal</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Privacy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-white/10 pt-8 text-center text-gray-500 text-sm">
+                 C4Ai Inc. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- State Management ---
+        const store = {
+            user: null, // { name, email, plan }
+            language: 'en',
+            theme: 'dark',
+            chatHistory: [],
+            generatedImages: [],
+            generatedVideos: []
+        };
+
+        // --- Router ---
+        const router = {
+            routes: {
+                'home': renderHome,
+                'chat': renderChat,
+                'image': renderImageGen,
+                'video': renderVideoGen,
+                'voice': renderVoice,
+                'pricing': renderPricing,
+                'login': renderLogin,
+                'register': renderRegister,
+                'dashboard': renderDashboard,
+                'admin': renderAdmin
+            },
+            navigate: (route) => {
+                window.scrollTo(0,0);
+                const renderFn = router.routes[route] || renderHome;
+                document.getElementById('app-container').innerHTML = '';
+                renderFn();
+                updateNavbar();
+            }
+        };
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            router.navigate('home');
+            
+            // Scroll effect for navbar
+            window.addEventListener('scroll', () => {
+                const nav = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    nav.classList.add('glass-panel', 'shadow-lg');
+                } else {
+                    nav.classList.remove('glass-panel', 'shadow-lg');
+                }
+            });
+        });
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleLanguage() {
+            store.language = store.language === 'en' ? 'ar' : 'en';
+            document.getElementById('lang-label').innerText = store.language.toUpperCase();
+            // In a real app, this would re-render text. Here we just toggle the label.
+            alert(`Language switched to ${store.language === 'en' ? 'English' : 'Arabic'}`);
+        }
+
+        function updateNavbar() {
+            const authButtons = document.getElementById('auth-buttons');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (store.user) {
+                authButtons.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+            } else {
+                authButtons.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+            }
+        }
+
+        // --- Background Animation (Canvas) ---
+        function initCanvas() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2;
+                    this.color = Math.random() > 0.5 ? '#00f3ff' : '#bc13fe';
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw connections
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 150) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- Page Renderers ---
+
+        function renderHome() {
+            const app = document.getElementById('app-container');
+            app.innerHTML = `
+                <!-- Hero Section -->
+                <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-void/50 to-void z-0"></div>
+                    <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
+                                              <div class="inline-block mb-4 px-4 py-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/5 text-neon-cyan text-sm font-rajdhani tracking-widest uppercase animate-pulse-slow">
+                            v2.0 Now Live
+                        </div>
+                        <h1 class="text-5xl md:text-7xl font-orbitron font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-neon-cyan to-neon-purple mb-6 leading-tight drop-shadow-[0_0_10px_rgba(0,243,255,0.5)]">
+                            CREATE THE <br> IMPOSSIBLE
+                        </h1>
+                        <p class="text-xl md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto font-light">
+                            The all-in-one AI platform for <span class="text-white font-medium">Image</span>, <span class="text-white font-medium">Video</span>, and <span class="text-white font-medium">Voice</span> generation.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button onclick="router.navigate('image')" class="group relative px-8 py-4 bg-neon-cyan text-black font-bold rounded-lg overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(0,243,255,0.6)]">
+                                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
+                                <span class="relative flex items-center gap-2">Start Creating <i class="fas fa-bolt"></i></span>
+                            </button>
+                            <button onclick="router.navigate('chat')" class="px-8 py-4 glass-panel text-white font-medium rounded-lg hover:bg-white/10 transition-all border border-white/20">
+                                Talk to AI
+                            </button>
+                        </div>
+                        
+                        <!-- Stats -->
+                        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/10 pt-8">
+                            <div>
+                                <div class="text-3xl font-orbitron text-white">10M+</div>
+                                <div class="text-sm text-gray-500">Images Created</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-orbitron text-white">500k+</div>
+                                <div class="text-sm text-gray-500">Active Users</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-orbitron text-white">4k</div>
+                                <div class="text-sm text-gray-500">Resolution</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-orbitron text-white">0.5s</div>
+                                <div class="text-sm text-gray-500">Latency</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Features Grid -->
+                <section class="py-20 px-4 max-w-7xl mx-auto">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl md:text-4xl font-orbitron font-bold mb-4">AI <span class="text-neon-purple">Tools</span></h2>
+                        <p class="text-gray-400">Everything you need to create content at the speed of thought.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${featureCard('fa-image', 'AI Image Gen', 'Generate stunning realistic and anime art from text prompts.', 'image', 'text-neon-cyan')}
+                        ${featureCard('fa-video', 'AI Video Gen', 'Create cinematic videos and animate photos with motion.', 'video', 'text-neon-purple')}
+                        ${featureCard('fa-comments', 'AI Chat', 'Smart assistant with memory, voice input, and code support.', 'chat', 'text-green-400')}
+                        ${featureCard('fa-microphone', 'Voice Studio', 'Text to speech, speech to text, and voice cloning.', 'voice', 'text-pink-500')}
+                        ${featureCard('fa-magic', 'Image to Video', 'Bring still photos to life with camera movement.', 'video', 'text-yellow-400')}
+                        ${featureCard('fa-layer-group', 'API Access', 'Integrate C4Ai into your own applications.', 'pricing', 'text-blue-400')}
+                    </div>
+                </section>
+
+                <!-- Showcase Marquee -->
+                <section class="py-10 overflow-hidden border-y border-white/5 bg-black/20">
+                    <div class="flex gap-4 animate-[float_20s_linear_infinite] w-max">
+                        ${[1,2,3,4,5,6,7,8].map(i => `
+                            <div class="w-64 h-40 rounded-lg bg-gray-800 overflow-hidden relative group">
+                                <img src="https://picsum.photos/seed/${i+100}/400/300" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <!-- Testimonials -->
+                <section class="py-20 px-4 max-w-7xl mx-auto">
+                    <h2 class="text-3xl font-orbitron font-bold text-center mb-12">Community <span class="text-neon-cyan">Love</span></h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        ${testimonialCard('Sarah J.', 'Digital Artist', 'C4Ai replaced my entire Adobe suite. The video generation is mind-blowing.')}
+                        ${testimonialCard('Mike T.', 'Indie Filmmaker', 'I created my short film intro in 10 minutes. The cinematic quality is unreal.')}
+                        ${testimonialCard('Alex R.', 'Game Dev', 'The API is so clean. I hooked the image gen directly into my game engine.')}
+                    </div>
+                </section>
+            `;
+        }
+
+        function featureCard(icon, title, desc, route, colorClass) {
+            return `
+                <div onclick="router.navigate('${route}')" class="glass-card p-6 rounded-xl cursor-pointer group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <i class="fas ${icon} text-6xl ${colorClass}"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center mb-4 border border-white/10 group-hover:border-neon-cyan/50 transition-colors">
+                            <i class="fas ${icon} text-xl ${colorClass}"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-neon-cyan transition-colors">${title}</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">${desc}</p>
+                        <div class="mt-4 flex items-center text-sm text-neon-cyan opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                            Try Now <i class="fas fa-arrow-right ml-2"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function testimonialCard(name, role, text) {
+            return `
+                <div class="glass-panel p-6 rounded-xl relative">
+                    <i class="fas fa-quote-right absolute top-4 right-4 text-white/10 text-4xl"></i>
+                    <p class="text-gray-300 mb-4 italic">"${text}"</p>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-neon-cyan to-neon-purple flex items-center justify-center text-black font-bold">
+                            ${name[0]}
+                        </div>
+                        <div>
+                            <div class="text-white font-medium text-sm">${name}</div>
+                            <div class="text-gray-500 text-xs">${role}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- Chat Application ---
+        function renderChat() {
+            const app = document.getElementById('app-container');
+            app.innerHTML = `
+                <div class="max-w-5xl mx-auto h-[calc(100vh-6rem)] flex flex-col md:flex-row gap-4 p-4 fade-in">
+                    <!-- Sidebar -->
+                    <div class="w-full md:w-64 glass-panel rounded-xl flex flex-col overflow-hidden shrink-0">
+                        <div class="p-4 border-b border-white/10">
+                            <button onclick="newChat()" class="w-full py-2 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-plus"></i> New Chat
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-2 space-y-1" id="chat-history-list">
+                            <div class="p-2 rounded-lg bg-white/5 text-sm text-gray-300 cursor-pointer truncate border-l-2 border-neon-cyan">Previous Conversation</div>
+                            <div class="p-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 cursor-pointer truncate">Project Ideas</div>
+                        </div>
+                        <div class="p-4 border-t border-white/10">
+                            <div class="text-xs text-gray-500 mb-2">Model: C4-GPT-4o</div>
+                            <div class="h-1 w-full bg-gray-700 rounded-full overflow-hidden">
+                                <div class="h-full bg-neon-cyan w-3/4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Chat Area -->
+                    <div class="flex-1 glass-panel rounded-xl flex flex-col overflow-hidden relative">
+                        <!-- Messages -->
+                        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-6">
+                            <!-- Initial Message -->
+                            <div class="flex gap-4">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-neon-purple to-neon-cyan flex items-center justify-center shrink-0">
+                                    <i class="fas fa-robot text-white text-xs"></i>
+                                </div>
+                                <div class="glass-card p-4 rounded-2xl rounded-tl-none max-w-[80%]">
+                                    <p class="text-gray-200">Hello! I'm C4Ai Assistant. How can I help you create today?</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input Area -->
+                        <div class="p-4 border-t border-white/10 bg-black/20">
+                            <div class="relative flex items-end gap-2 glass-panel rounded-xl p-2">
+                                <button class="p-2 text-gray-400 hover:text-neon-cyan transition-colors" title="Voice Input" onclick="startVoiceInput()">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <textarea id="chat-input" rows="1" class="w-full bg-transparent text-white placeholder-gray-500 resize-none outline-none max-h-32 py-2" placeholder="Message C4Ai..."></textarea>
+                                <button onclick="sendMessage()" class="p-2 bg-neon-cyan text-black rounded-lg hover:bg-white transition-colors">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="text-center mt-2 text-xs text-gray-600">C4Ai can make mistakes. Consider checking important information.</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Auto-resize textarea
+            setTimeout(() => {
+                const textarea = document.getElementById('chat-input');
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }, 100);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            // User Message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'flex gap-4 flex-row-reverse fade-in';
+            userMsg.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center shrink-0">
+                    <i class="fas fa-user text-gray-300 text-xs"></i>
+                </div>
+                <div class="glass-card p-4 rounded-2xl rounded-tr-none max-w-[80%] bg-neon-cyan/5 border-neon-cyan/20">
+                    <p class="text-gray-200">${text}</p>
+                </div>
+            `;
+            messagesContainer.appendChild(userMsg);
+            input.value = '';
+            input.style.height = 'auto';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Simulate Typing
+            const typingId = 'typing-' + Date.now();
+            const typingMsg = document.createElement('div');
+            typingMsg.id = typingId;
+            typingMsg.className = 'flex gap-4 fade-in';
+            typingMsg.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-neon-purple to-neon-cyan flex items-center justify-center shrink-0">
+                    <i class="fas fa-robot text-white text-xs"></i>
+                </div>
+                <div class="glass-card p-4 rounded-2xl rounded-tl-none max-w-[80%]">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Simulate Response Delay
+            setTimeout(() => {
+                const el = document.getElementById(typingId);
+                if (el) {
+                    el.innerHTML = `
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-neon-purple to-neon-cyan flex items-center justify-center shrink-0">
+                            <i class="fas fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="glass-card p-4 rounded-2xl rounded-tl-none max-w-[80%]">
+                            <p class="text-gray-200">I've processed your request: "<span class="text-neon-cyan">${text}</span>". As an AI demo, I can confirm this input is valid. In production, I would generate a detailed response based on my neural network training.</p>
+                            <div class="mt-2 flex gap-2">
+                                <button class="text-xs text-gray-500 hover:text-white"><i class="fas fa-copy"></i> Copy</button>
+                                <button class="text-xs text-gray-500 hover:text-white"><i class="fas fa-thumbs-up"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 1500);
+        }
+
+        function startVoiceInput() {
+            alert("Voice input activated. (Simulation: Listening...)");
+            setTimeout(() => {
+                document.getElementById('chat-input').value = "Create a futuristic city image";
+            }, 2000);
+        }
+
+        // --- Image Generation ---
+        function renderImageGen() {
+            const app = document.getElementById('app-container');
+            app.innerHTML = `
+                <div class="max-w-6xl mx-auto p-4 fade-in">
+                    <div class="text-center mb-8">
+                        <h1 class="text-4xl font-orbitron font-bold mb-2">AI <span class="text-neon-purple">Image</span> Studio</h1>
+                        <p class="text-gray-400">Transform text into stunning visuals.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Controls -->
+                        <div class="glass-panel p-6 rounded-xl h-fit">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Prompt</label>
+                                    <textarea id="img-prompt" class="ai-input w-full p-3 rounded-lg text-sm" rows="4" placeholder="A cyberpunk samurai standing in the rain, neon lights, 8k resolution..."></textarea>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-2">Style</label>
+                                        <select id="img-style" class="ai-input w-full p-2 rounded-lg text-sm">
+                                            <option value="realistic">Realistic</option>
+                                            <option value="anime">Anime</option>
+                                            <option value="3d">3D Render</option>
+                                            <option value="digital">Digital Art</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+                                        <select class="ai-input w-full p-2 rounded-lg text-sm">
+                                            <option>1:1</option>
+                                            <option>16:9</option>
+                                            <option>9:16</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">Creativity (CFG Scale)</label>
+                                    <input type="range" min="1" max="20" value="7" class="w-full">
+                                </div>
+
+                                <button onclick="generateImage()" class="w-full py-3 bg-gradient-to-r from-neon-purple to-blue-600 text-white font-bold rounded-lg ho
